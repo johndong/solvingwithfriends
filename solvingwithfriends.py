@@ -36,7 +36,10 @@ def build_wordlist():
    wordlist = open("enable1.txt").read().splitlines()
         
 
-def get_best_letter_guesses(words):
+def get_best_letter_guesses(words, used_letters):
+    word_length = len(list(words)[0])
+    num_strikes = 4 + (8 - word_length)
+    num_strikes_left = num_strikes - len(used_letters)
     best_guesses = []
     for letter in string.ascii_lowercase:
         score = score_guess(words, letter)
@@ -90,6 +93,6 @@ if __name__ == "__main__":
       if len(matches) == 1:
         print "The word is: %s" % list(matches)[0]
       else:
-        best_guess = get_best_letter_guesses(matches)
+        best_guess = get_best_letter_guesses(matches, used_letters)
         print "Your best guess is the letter: %s" % best_guess
       

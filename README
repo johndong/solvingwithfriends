@@ -24,6 +24,10 @@ costs you a strike.... That's being worked on.
 Usage
 --------------------
 
+./solvingwithfriends.py
+
+Note that the prompts support readline history editing (e.g. up and down
+arrows)
 
 
 License

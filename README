@@ -1,0 +1,32 @@
+Hanging With Friends Solver:
+---------------------
+
+Authors:
+Brad Misik <temugen at bradmisik.com> and John Dong <jdong at johndong.com>
+
+
+Description
+---------------------
+Use to cheat at Hanging With Friends (or other Hangman style games). The
+solver takes the current board state, a list of incorrect guesses, and
+suggests (1) what words are left, (2) what is your best letter (or what are
+your best letters) to guess on your current turn.
+
+
+The guess it suggests attempts to be information-theoretic optimal -- cutting
+the number of options left in half no matter what the outcome of the guess is.
+One can argue this is not the OPTIMAL Hangman solver because you have a
+limited number of guesses, and a guess that gives you less information but
+avoids a strike is better than a information-theoretic perfect guess that
+costs you a strike.... That's being worked on.
+
+
+Usage
+--------------------
+
+
+
+License
+---------------------
+
+BSD-like. More information soon.

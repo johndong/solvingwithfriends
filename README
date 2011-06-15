@@ -13,13 +13,14 @@ suggests (1) what words are left, (2) what is your best letter (or what are
 your best letters) to guess on your current turn.
 
 
-The guess it suggests attempts to be information-theoretic optimal -- cutting
-the number of options left in half no matter what the outcome of the guess is.
-One can argue this is not the OPTIMAL Hangman solver because you have a
-limited number of guesses, and a guess that gives you less information but
-avoids a strike is better than a information-theoretic perfect guess that
-costs you a strike.... That's being worked on.
+The solver chooses a letter that minimizes the probability of striking out.
+This is the optimal way of playing Hangman unless you have a priori knowledge
+of how the opponent chooses words (which probably also involves knowing their
+tiles)
 
+The solver can also be run in a "generator" mode where, given a set of
+letters, tells you the most difficult Hangman word you can construct with
+them.
 
 Usage
 --------------------
@@ -29,8 +30,10 @@ Usage
 Note that the prompts support readline history editing (e.g. up and down
 arrows)
 
+Enter "!" as the word to switch between solver and generator modes
+
 
 License
 ---------------------
 
-BSD-like. More information soon.
+BSD.

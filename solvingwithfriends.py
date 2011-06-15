@@ -7,6 +7,9 @@ from math import log
 import string
 import readline
 import code
+import shelve
+
+strike_cache = shelve.open("strikes.cache")
 
 class HistConsole(code.InteractiveConsole):
    def __init__(self, histfile):
@@ -26,23 +29,22 @@ letter_freq = {}
 
 
 def init():
-    build_wordlist()
     global letter_freq
     freq = [8.167, 1.492, 2.782, 4.253, 12.702, 2.228, 2.015, 6.094, 6.966, 0.153, 0.772, 4.025, 2.406, 6.749, 7.507, 1.929, 0.095, 5.987, 6.327, 9.056, 2.758, 0.978, 2.360, 0.150, 1.974, 0.074]
     letter_freq = dict(zip(string.ascii_lowercase, freq))
+    build_wordlist()
 
 def build_wordlist():
    global wordlist
-   wordlist = open("enable1.txt").read().splitlines()
-        
+   wordlist = [i for i in open("enable1.txt").read().splitlines() if len(i) > 3 and len(i) < 9]
+#   for word in wordlist:
+#      print word, expected_strikes_left(word)
 
-def get_best_letter_guesses(words, used_letters):
-    word_length = len(list(words)[0])
-    num_strikes = 4 + (8 - word_length)
-    num_strikes_left = num_strikes - len(used_letters)
+def get_best_letter_guesses(strategy, words, word_pattern, used_letters):
     best_guesses = []
     for letter in string.ascii_lowercase:
-        score = score_guess(words, letter)
+        if letter in word_pattern: continue
+        score = strategy(words, letter)
         #print "Score of letter %s is %f" % (letter, score)
         if not best_guesses or score > best_guesses[0][0]:
             best_guesses = [(score, letter)]
@@ -57,7 +59,7 @@ def get_matches(word_pattern, used_letters):
    regex = re.compile(regex)
    return set([w for w in wordlist if regex.match(w)])
 
-def score_guess(possible_words, letter):
+def score_guess_minguesses(possible_words, letter):
    "Give the entropy gain of making the guess 'letter'"
    remaining_words = len([i for i in possible_words if letter in i])
    #print "For guess of %s, remaining_words=%s" % (letter, remaining_words)
@@ -67,32 +69,140 @@ def score_guess(possible_words, letter):
    q=1-p + 0.0001
    entropy_after = -p*log(p, 2) - q*log(q, 2)
    return entropy_after
+   
+def score_guess_maxlife(possible_words, letter):
+   remaining_words = [i for i in possible_words if letter in i]
+   return len(remaining_words)
+   
+def get_last_vowel(word):
+   vowels = "aeiou"
+   word=list(word)
+   while word:
+      letter = word.pop()
+      if letter in vowels: return letter
+   return None
+
+class HangingGame(object):
+   def __init__(self, word):
+      self.guesses=set()
+      last_vowel = get_last_vowel(word)
+      if last_vowel is not None:
+         self.guesses.add(last_vowel)
+      self.word=word
+   def __str__(self):
+      return "".join(map(lambda i: i if i in self.guesses else "?", self.word))
+   def guess_letter(self, letter):
+      self.guesses.add(letter)
+   def num_strikes(self):
+      return len(self.get_wrong_letters())
+   def get_wrong_letters(self):
+      return set([i for i in self.guesses if i not in self.word])
+   def solved(self):
+      return "?" not in str(self)
+   def clone(self):
+      newgame = HangingGame(self.word)
+      newgame.guesses = set(self.guesses)
+
+def expected_strikes_left(word):
+   '''
+   Simulates trying to guess the word.
+   
+   Returns number of strikes you'd have left by following get_best_letter_guesses()
+   '''
+   if word in strike_cache:
+      return strike_cache[word]
+   
+   game = HangingGame(word)
+   while not game.solved():
+      matches = get_matches(str(game), game.get_wrong_letters())
+      #print matches
+      best_guess = get_best_letter_guesses(default_strategy, matches, str(game), game.get_wrong_letters())[0]
+      #print "For word", game, "guessing", best_guess, "yielding",
+      game.guess_letter(best_guess)
+      #print "(Used guesses: %s)" % "".join(game.get_wrong_letters())
+   num_strikes_allowed = 4 + (8 - len(game.word))
+   strike_cache[word]=num_strikes_allowed - game.num_strikes()
+   return expected_strikes_left(word)
 
 
+def get_best_word_list(letter_list):
+   best_words = []
+   for word in wordlist:
+      if not can_form_word(letter_list, word):
+         continue
+      num_strikes_left = expected_strikes_left(word)
+      if len(best_words) == 0:
+         best_words = [(num_strikes_left, word)]
+      else:
+         if num_strikes_left == best_words[0][0]:
+            best_words.append((num_strikes_left, word))
+         elif num_strikes_left < best_words[0][0]:
+            best_words = [(num_strikes_left, word)]
+   return best_words
 
+def can_form_word(letter_list, word):
+   for letter in word:
+      if letter_list.count(letter) < word.count(letter):
+         return False
+   return True
+   
+def probability_of_strike(word_list, letter):
+   after = [i for i in word_list if letter not in i]
+   before = word_list
+   p = len(after) / float(len(before))
+   return p
+
+default_strategy=score_guess_maxlife
 
 if __name__ == "__main__":
    init()
    pattern_console=HistConsole("pattern_hist")
    letters_console=HistConsole("letters_hist")
    used_letters = ""
+   mode = "solve"
    while True:
-      pattern_console=HistConsole("pattern_hist")
-      pattern=pattern_console.raw_input("Enter word pattern (like '?ots') > ").strip()
-      pattern_console.save_history()
-      pattern = "".join([i for i in pattern if i.isalpha() or i == '?']).lower()
-      letters_console=HistConsole("letters_hist")
-      readline.insert_text(used_letters)
-      used_letters = letters_console.raw_input("Enter the wrong letters you've guessed > ").strip()
-      letters_console.save_history()
-      used_letters = "".join(set([i for i in used_letters if i.isalpha()])).lower()
-      matches = get_matches(pattern, used_letters)
-      print "There are %d possible words:" % len(matches)
-      if len(matches) <= 20:
-        print matches
-      if len(matches) == 1:
-        print "The word is: %s" % list(matches)[0]
-      else:
-        best_guess = get_best_letter_guesses(matches, used_letters)
-        print "Your best guess is the letter: %s" % best_guess
+      if mode == "solve":
+         pattern_console=HistConsole("pattern_hist")
+         pattern=pattern_console.raw_input("Enter word pattern (like '?ots') > ").strip()
+         if '!' in pattern:
+            mode = 'create'
+            continue
+         pattern_console.save_history()
+         pattern = "".join([i for i in pattern if i.isalpha() or i == '?']).lower()
+         letters_console=HistConsole("letters_hist")
+         readline.insert_text(used_letters)
+         used_letters = letters_console.raw_input("Enter the wrong letters you've guessed > ").strip()
+         letters_console.save_history()
+         used_letters = "".join(set([i for i in used_letters if i.isalpha()])).lower()
+         strikes_given = 4 + (8 - len(pattern))
+         strikes_left = strikes_given - len(used_letters)
+         print "Strikes left: %d" % strikes_left
+         matches = get_matches(pattern, used_letters)
+         print "There are %d possible words:" % len(matches)
+         if len(matches) <= 20:
+           print matches
+         if len(matches) == 1:
+           print "The word is: %s" % list(matches)[0]
+         else:
+            best_guess_minguesses = get_best_letter_guesses(score_guess_minguesses, matches, pattern, used_letters)
+            best_guess_maxlife = get_best_letter_guesses(score_guess_maxlife, matches, pattern, used_letters)
+            print "minguess prob %f" % probability_of_strike(matches, best_guess_minguesses[0])
+            print "maxlife prob %f" % probability_of_strike(matches, best_guess_maxlife[0])
+            print best_guess_minguesses
+            print best_guess_maxlife
+            if probability_of_strike(matches, best_guess_maxlife[0]) < 0.25:
+               best_guess = best_guess_maxlife
+               print "using maxlife strat"
+            else:
+               best_guess = best_guess_minguesses
+               print "using minguess strat"
+         print "Your best guess is the letter: %s" % best_guess
+      elif mode == "create":
+         pattern = raw_input("Enter the letters you were given (including duplicates) > ").strip().lower()
+         if '!' in pattern:
+            mode = "solve"
+            continue
+         words = get_best_word_list(pattern)
+         print "The best words you can create are: ",
+         print words
       

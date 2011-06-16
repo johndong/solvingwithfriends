@@ -21,6 +21,7 @@ class solve:
     matches = get_matches(pattern, used_letters)
     best_guesses = get_best_letter_guesses(score_guess_maxlife, matches, pattern, used_letters)
     resp = {'best_guesses': best_guesses}
+    web.header('Content-Type', 'application/json')
     return '(' + json.dumps(resp) + ')'
 
 class index:

@@ -57,7 +57,8 @@ def get_matches(word_pattern, used_letters):
    remaining_letters="".join(set([i for i in string.ascii_lowercase if i not in used_letters and i not in word_pattern]))
    regex=("^%s$" % word_pattern).replace('?',"[%s]" % remaining_letters)
    regex = re.compile(regex)
-   return set([w for w in wordlist if regex.match(w)])
+   return set([w for w in wordlist if regex.match(w) and \
+       get_last_vowel_index(w) <= get_last_vowel_index(word_pattern)])
 
 def score_guess_minguesses(possible_words, letter):
    "Give the entropy gain of making the guess 'letter'"
@@ -73,14 +74,21 @@ def score_guess_minguesses(possible_words, letter):
 def score_guess_maxlife(possible_words, letter):
    remaining_words = [i for i in possible_words if letter in i]
    return len(remaining_words)
+
+def get_last_vowel_index(word):
+    vowels = "aeiou"
+    word = list(word)
+    i = len(word)
+    while word:
+        letter = word.pop()
+        i -= 1
+        if letter in vowels: return i
+    return None
    
 def get_last_vowel(word):
-   vowels = "aeiou"
-   word=list(word)
-   while word:
-      letter = word.pop()
-      if letter in vowels: return letter
-   return None
+    last_vowel_index = get_last_vowel_index(word)
+    if last_vowel_index is not None: return word[i]
+    return None
 
 class HangingGame(object):
    def __init__(self, word):

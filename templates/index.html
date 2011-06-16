@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title>Site With Friends</title>
+        <script type="text/javascript">
+            function update()
+{
+            req = new XMLHttpRequest();
+req.onreadystatechange = function()
+{
+    if(req.readyState == 4 && req.status == 200)
+        document.getElementsByName("best_guesses")[0].innerHTML = eval(req.responseText).best_guesses[0];
+}
+pattern = document.getElementsByName("pattern")[0].value;
+used_letters = document.getElementsByName("used_letters")[0].value;
+            req.open("GET", "solve/" + escape(pattern) + "/" + escape(used_letters), true);
+            req.send();
+            }
+        </script>
+    </head>
+    <body>
+        Pattern: <input type="text" name="pattern" onkeyup="update()" />
+        <br />
+        Used Letters: <input type="text" name="used_letters" onkeyup="update()" />
+        <br />
+        Best Guesses: <span name="best_guesses"></span>
+    </body>
+</html>

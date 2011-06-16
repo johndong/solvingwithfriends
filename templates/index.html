@@ -8,7 +8,12 @@
 req.onreadystatechange = function()
 {
     if(req.readyState == 4 && req.status == 200)
-        document.getElementsByName("best_guesses")[0].innerHTML = eval(req.responseText).best_guesses[0];
+	{
+		json = eval(req.responseText)
+        document.getElementsByName("best_guesses")[0].innerHTML = json.best_guesses;
+		document.getElementsByName("num_remaining_words")[0].innerHTML = json.num_matches;
+		document.getElementsByName("remaining_words")[0].innerHTML = json.matches;
+	}
 }
 pattern = document.getElementsByName("pattern")[0].value;
 used_letters = document.getElementsByName("used_letters")[0].value;
@@ -23,5 +28,8 @@ used_letters = document.getElementsByName("used_letters")[0].value;
         Used Letters: <input type="text" name="used_letters" onkeyup="update()" />
         <br />
         Best Guesses: <span name="best_guesses"></span>
+		<br />
+		<span name="num_remaining_words"></span> Remaining Words: <br />
+					<span name="remaining_words"></span>
     </body>
 </html>

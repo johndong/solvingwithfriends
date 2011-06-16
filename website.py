@@ -14,13 +14,13 @@ render = web.template.render("templates/")
 
 class solve:
   def GET(self, pattern, used_letters):
-    def format_matches(matches):
+    def format_matches(matches, letter):
       from cStringIO import StringIO
       s = StringIO()
       num = 0
       print >>s, "<ol>"
       for m in matches:
-        print >>s, "<li> %s" % m
+        print >>s, "<li> %s" % m.replace(letter,"<b>%s</b>" % letter)
         num += 1
         if num >= 50:
           print >>s, "<li> ... (too many to list)"
@@ -33,8 +33,12 @@ class solve:
     used_letters = "".join(set([i for i in used_letters if i.isalpha()])).lower()
     matches = get_matches(pattern, used_letters)
     best_guesses = get_best_letter_guesses(score_guess_maxlife, matches, pattern, used_letters)
-    resp = {'best_guesses': " ".join(best_guesses), 'num_matches': "<b>%s</b>" % str(len(matches)), 'matches': format_matches(sorted(list(matches))),
+    if matches:
+      resp = {'best_guesses': " ".join(["<b>%s</b>" % best_guesses[0]] + best_guesses[1:]), 'num_matches': "<b>%s</b>" % str(len(matches)), 'matches': format_matches(sorted(list(matches)), best_guesses[0]),
              }
+    else:
+      resp = {'best_guesses': "???", 'num_matches': "<b>%s</b>" % str(len(matches)), 'matches': "",
+               }
     web.header('Content-Type', 'application/json')
     return '(' + json.dumps(resp) + ')'
 

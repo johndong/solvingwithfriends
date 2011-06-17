@@ -8,8 +8,12 @@ import string
 import readline
 import code
 import shelve
+from multiprocessing import Pool
 
-strike_cache = shelve.open("strikes.cache")
+
+# Open in read only since multiple processes may touch it
+# To update cache, see the if False: code in init(). Remove flags='r' when doing so.
+strike_cache = shelve.open("strikes.cache", flag='r')
 
 class HistConsole(code.InteractiveConsole):
    def __init__(self, histfile):
@@ -33,12 +37,23 @@ def init():
     freq = [8.167, 1.492, 2.782, 4.253, 12.702, 2.228, 2.015, 6.094, 6.966, 0.153, 0.772, 4.025, 2.406, 6.749, 7.507, 1.929, 0.095, 5.987, 6.327, 9.056, 2.758, 0.978, 2.360, 0.150, 1.974, 0.074]
     letter_freq = dict(zip(string.ascii_lowercase, freq))
     build_wordlist()
-
+def cache_word(word):
+   return (word, expected_strikes_left(word, cache=False))
 def build_wordlist():
    global wordlist
    wordlist = [i for i in open("enable1.txt").read().splitlines() if len(i) > 3 and len(i) < 9]
-#   for word in wordlist:
-#      print word, expected_strikes_left(word)
+   if False: # Update cache
+     p = Pool(processes=4)
+     results=[]
+     for word in wordlist:
+       results.append(p.apply_async(cache_word, [word]))
+     for result in results:
+       (word, strikes)=result.get()
+       strike_cache[word]=strikes
+   
+   
+   
+   
 
 def get_best_letter_guesses(strategy, words, word_pattern, used_letters):
     best_guesses = []
@@ -108,15 +123,14 @@ class HangingGame(object):
       newgame = HangingGame(self.word)
       newgame.guesses = set(self.guesses)
 
-def expected_strikes_left(word):
+def expected_strikes_left(word, cache=True):
    '''
    Simulates trying to guess the word.
    
    Returns number of strikes you'd have left by following get_best_letter_guesses()
    '''
-   if word in strike_cache:
-      return strike_cache[word]
-   
+   if cache and word in strike_cache:
+      return strike_cache[word]   
    game = HangingGame(word)
    while not game.solved():
       matches = get_matches(str(game), game.get_wrong_letters())
@@ -126,8 +140,14 @@ def expected_strikes_left(word):
       game.guess_letter(best_guess)
       #print "(Used guesses: %s)" % "".join(game.get_wrong_letters())
    num_strikes_allowed = 4 + (8 - len(game.word))
-   strike_cache[word]=num_strikes_allowed - game.num_strikes()
-   return expected_strikes_left(word)
+   result=num_strikes_allowed - game.num_strikes()
+   if cache:
+     try:
+       strike_cache[word] = result
+     except: pass
+     return result
+   print word, result
+   return result
 
 
 def get_best_word_list(letter_list):

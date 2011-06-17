@@ -133,7 +133,7 @@ def expected_strikes_left(word):
       matches = get_matches(str(game), game.get_wrong_letters())
       #print matches
       best_guess = get_best_letter_guesses(default_strategy, matches, str(game), game.get_wrong_letters())[0]
-      print "For word", game, "guessing", best_guess, "yielding", game.guess_letter(best_guess)
+      #print "For word", game, "guessing", best_guess, "yielding", game.guess_letter(best_guess)
       #print "(Used guesses: %s)" % "".join(game.get_wrong_letters())
    num_strikes_allowed = 4 + (8 - len(game.word))
    result=num_strikes_allowed - game.num_strikes()

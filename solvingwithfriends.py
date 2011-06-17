@@ -137,8 +137,9 @@ def expected_strikes_left(word):
    result=num_strikes_allowed - game.num_strikes()
    try:
      strike_cache[word] = result
-   except e:
-     print >>sys.stderr, e
+   except Exception as e:
+     print "Error storing cache!", repr(e)
+     return expected_strikes_left(word)
    return result
 
 

@@ -77,12 +77,9 @@ def score_guess_maxlife(possible_words, letter):
 
 def get_last_vowel_index(word):
     vowels = "aeiou"
-    word = list(word)
-    i = len(word)
-    while word:
-        letter = word.pop()
-        i -= 1
-        if letter in vowels: return i
+    idx=max([word.rfind(i) for i in vowels])
+    if idx >= 0:
+      return idx
     return None
    
 def get_last_vowel(word):

@@ -87,7 +87,7 @@ def get_last_vowel_index(word):
    
 def get_last_vowel(word):
     last_vowel_index = get_last_vowel_index(word)
-    if last_vowel_index is not None: return word[i]
+    if last_vowel_index is not None: return word[last_vowel_index]
     return None
 
 class HangingGame(object):

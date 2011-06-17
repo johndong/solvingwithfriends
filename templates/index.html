@@ -1,6 +1,23 @@
 <html>
     <head>
         <title>Site With Friends</title>
+        <style type="text/css">
+            body
+            {
+                background: #0000999; /* for non-css3 browsers */
+                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#000099', endColorstr='#99ccff'); /* for IE */
+                background: -webkit-gradient(linear, left top, left bottom, from(#000099), to(#99ccff)); /* for webkit browsers */
+                background: -moz-linear-gradient(top,  #000099,  #99ccff); /* for firefox 3.6+ */
+                color: #ffffff;
+            }
+            div#gui
+            {
+                width: 150px;
+                margin: auto;
+                text-align: left;
+            }
+        </style>
+                
         <script type="text/javascript">
             function update()
 {
@@ -10,26 +27,29 @@ req.onreadystatechange = function()
     if(req.readyState == 4 && req.status == 200)
 	{
 		json = eval(req.responseText)
-        document.getElementsByName("best_guesses")[0].innerHTML = json.best_guesses;
-		document.getElementsByName("num_remaining_words")[0].innerHTML = json.num_matches;
-		document.getElementsByName("remaining_words")[0].innerHTML = json.matches;
+        document.getElementById("best_guesses").innerHTML = json.best_guesses;
+		document.getElementById("num_remaining_words").innerHTML = json.num_matches;
+		document.getElementById("remaining_words").innerHTML = json.matches;
 	}
 }
-pattern = document.getElementsByName("pattern")[0].value;
-used_letters = document.getElementsByName("used_letters")[0].value;
+pattern = document.getElementById("pattern").value;
+used_letters = document.getElementById("used_letters").value;
             req.open("GET", "solve/" + escape(pattern) + "/" + escape(used_letters), true);
             req.send();
             }
         </script>
     </head>
     <body>
-        Pattern: <input type="text" name="pattern" onkeyup="update()" />
-        <br />
-        Used Letters: <input type="text" name="used_letters" onkeyup="update()" />
-        <br />
-        Best Guesses: <span name="best_guesses"></span>
-		<br />
-		<span name="num_remaining_words"></span> Remaining Words: <br />
-					<span name="remaining_words"></span>
+        <div id="gui">
+            Pattern: <input type="text" id="pattern" onkeyup="update()" />
+            <br />
+            Used Letters: <input type="text" id="used_letters" onkeyup="update()" />
+            <br />
+            Best Guesses: <span id="best_guesses"></span>
+            <br />
+            <span id="num_remaining_words"></span> Remaining Words:
+            <br />
+            <span id="remaining_words"></span>
+        </div>
     </body>
 </html>

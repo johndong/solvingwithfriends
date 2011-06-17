@@ -33,12 +33,12 @@
                 margin: auto;
                 margin: 50px auto 50px;
             }
-            div[name="pattern_tile"]
+            div.blank_tile
             {
-                background: #ffff66;
-                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffcc33', endColorstr='#ffff00'); /* for IE */
+                background: #cccccc;
+                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#cccccc', endColorstr='#ffffff'); /* for IE */
                 background: -webkit-gradient(linear, left top, left bottom, from(#cccccc), to(#ffffff)); /* for webkit browsers */
-                background: -moz-linear-gradient(top,  #ffcc33,  #ffff00); /* for firefox 3.6+ */
+                background: -moz-linear-gradient(top,  #cccccc,  #ffffff); /* for firefox 3.6+ */
                 width: 50px;
                 height: 50px;
                 text-align: center;
@@ -58,12 +58,32 @@
                 text-align: center;
                 margin: auto;
             }
-            div[name="letter_tile"]
+            div.filled_tile
             {
                 background: #ffff66;
                 filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffcc33', endColorstr='#ffff00'); /* for IE */
                 background: -webkit-gradient(linear, left top, left bottom, from(#ffcc33), to(#ffff00)); /* for webkit browsers */
                 background: -moz-linear-gradient(top,  #ffcc33,  #ffff00); /* for firefox 3.6+ */
+                width: 50px;
+                height: 50px;
+                text-align: center;
+                color: #00000000;
+                -moz-border-radius: 5px;
+                -webkit-border-radius: 5px;
+                -moz-box-shadow: 1px 1px 3px #000000;
+                -webkit-box-shadow: 1px 1px 3px #000000;
+                box-shadow: 1px 1px 3px #000000;
+                line-height: 50px;
+                vertical-align: middle;
+                font-weight: bold;
+                font-family: verdana;
+            }
+            div.used_tile
+            {
+                background: #ff0033;
+                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0033', endColorstr='#ffcccc'); /* for IE */
+                background: -webkit-gradient(linear, left top, left bottom, from(#ff0033), to(#ffcccc)); /* for webkit browsers */
+                background: -moz-linear-gradient(top,  #ff0033,  #ffcccc); /* for firefox 3.6+ */
                 width: 50px;
                 height: 50px;
                 text-align: center;
@@ -140,22 +160,87 @@
         return fnc.apply(obj, [arg])
     }
 }
+    function previewGame(letter_count)
+{
+    pattern_tiles = document.getElementsByName('pattern_tile');
+    for(i = 0; i < pattern_tiles.length; i++)
+    {
+        if(i < letter_count)
+        {
+            pattern_tiles[i].className = "filled_tile";
+            pattern_tiles[i].innerText = "?";
+        }
+        else
+        {
+            pattern_tiles[i].className = "blank_tile";
+            pattern_tiles[i].innerText = "";
+        }
+    }
+}
+    function setupGame(letter_count)
+{
+    if(letter_count < 4)
+        return;
+
+    pattern_tiles = document.getElementsByName('pattern_tile');
+    for(i = 0; i < pattern_tiles.length; i++)
+    {
+        if(i < letter_count)
+        {
+            pattern_tiles[i].onclick = bind(clearPatternTile,
+                    pattern_tiles[i], pattern_tiles[i].id);
+        }
+        else
+        {
+            pattern_tiles[i].onclick = null;
+        }
+        pattern_tiles[i].onmouseover = null;
+        pattern_tiles[i].onmouseout = null;
+    }
+    enableLetterTiles();
+}
 function initPatternTiles()
 {
     pattern_tiles = document.getElementsByName('pattern_tile');
     for(i = 0; i < pattern_tiles.length; i++)
     {
-        id = pattern_tiles[i].id;
-        Droppables.add(id, {onDrop: dropLetter});
-        pattern_tiles[i].onclick = bind(clearPatternTile, null, id);
+        pattern_tiles[i].onmouseover = bind(previewGame, pattern_tiles[i], i+1);
+        pattern_tiles[i].onmouseout = bind(previewGame, pattern_tiles[i], 0);
+        pattern_tiles[i].onclick = bind(setupGame, pattern_tiles[i], i+1);
+        Droppables.add(pattern_tiles[i].id, {onDrop: dropLetter});
     }
 }
-
-        function initLetterTiles()
+    function toggleUseLetter(letter_tile_id)
+{
+    letter_tile = document.getElementById(letter_tile_id);
+    if(letter_tile.className == "filled_tile")
+    {
+        letter_tile.className = "used_tile";
+    }
+    else
+    {
+        letter_tile.className= "filled_tile";
+    }
+}
+function disableLetterTiles()
+{
+    letter_tiles = document.getElementsByName('letter_tile');
+    {
+        for(i = 0; i < letter_tiles.length; i++)
+        {
+                letter_tiles[i].draggable.destroy();
+        }
+    }
+}
+        function enableLetterTiles()
 {
     letter_tiles = document.getElementsByName('letter_tile');
     for(i = 0; i < letter_tiles.length; i++)
-        new Draggable(letter_tiles[i].id, {revert: true});
+    {
+        letter_tiles[i].draggable = new Draggable(letter_tiles[i].id, {revert: true});
+        letter_tiles[i].onclick = bind(toggleUseLetter, letter_tiles[i],
+                letter_tiles[i].id);
+    }
 }
             function update()
 {
@@ -182,62 +267,62 @@ used_letters = document.getElementById("used_letters").value;
             req.open("GET", "solve/" + escape(pattern) + "/" + escape(used_letters), true);
             req.send();
 }
-        </script>
+    </script>
     </head>
-    <body onLoad="createIDs(); initPatternTiles(); initLetterTiles();">
+    <body onload="createIDs(); initPatternTiles();">
         <div class="main_box">
             Guess <b><span id="best_guesses"></span></b>
             <br />
-            Used Letters: <input type="text" id="used_letters" onkeyup="update()" />
+            Used Letters: <input type="text" id="used_letters" onKeyUp="update()" />
             <br />
             <table class="pattern_tiles">
                 <tr>
-                    <td><div name="pattern_tile">?</div></td>
-                    <td><div name="pattern_tile">?</div></td>
-                    <td><div name="pattern_tile">?</div></td>
-                    <td><div name="pattern_tile">?</div></td>
-                    <td><div name="pattern_tile">?</div></td>
-                    <td><div name="pattern_tile">?</div></td>
-                    <td><div name="pattern_tile">?</div></td>
-                    <td><div name="pattern_tile">?</div></td>
+                    <td><div class="blank_tile" name="pattern_tile"></div></td>
+                    <td><div class="blank_tile" name="pattern_tile"></div></td>
+                    <td><div class="blank_tile" name="pattern_tile"></div></td>
+                    <td><div class="blank_tile" name="pattern_tile"></div></td>
+                    <td><div class="blank_tile" name="pattern_tile"></div></td>
+                    <td><div class="blank_tile" name="pattern_tile"></div></td>
+                    <td><div class="blank_tile" name="pattern_tile"></div></td>
+                    <td><div class="blank_tile" name="pattern_tile"></div></td>
                 </tr>
             </table>
             <table class="letter_tiles">
                 <tr>
-                    <td><div name="letter_tile">Q</div></td>
-                    <td><div name="letter_tile">W</div></td>
-                    <td><div name="letter_tile">E</div></td>
-                    <td><div name="letter_tile">R</div></td>
-                    <td><div name="letter_tile">T</div></td>
-                    <td><div name="letter_tile">Y</div></td>
-                    <td><div name="letter_tile">U</div></td>
-                    <td><div name="letter_tile">I</div></td>
-                    <td><div name="letter_tile">O</div></td>
-                    <td><div name="letter_tile">P</div></td>
+                    <td><div class="filled_tile" name="letter_tile">Q</div></td>
+                    <td><div class="filled_tile" name="letter_tile">W</div></td>
+                    <td><div class="filled_tile" name="letter_tile">E</div></td>
+                    <td><div class="filled_tile" name="letter_tile">R</div></td>
+                    <td><div class="filled_tile" name="letter_tile">T</div></td>
+                    <td><div class="filled_tile" name="letter_tile">Y</div></td>
+                    <td><div class="filled_tile" name="letter_tile">U</div></td>
+                    <td><div class="filled_tile" name="letter_tile">I</div></td>
+                    <td><div class="filled_tile" name="letter_tile">O</div></td>
+                    <td><div class="filled_tile" name="letter_tile">P</div></td>
                 </tr>
             </table>
             <table class="letter_tiles">
                 <tr>
-                    <td><div name="letter_tile">A</div></td>
-                    <td><div name="letter_tile">S</div></td>
-                    <td><div name="letter_tile">D</div></td>
-                    <td><div name="letter_tile">F</div></td>
-                    <td><div name="letter_tile">G</div></td>
-                    <td><div name="letter_tile">H</div></td>
-                    <td><div name="letter_tile">J</div></td>
-                    <td><div name="letter_tile">K</div></td>
-                    <td><div name="letter_tile">L</div></td>
+                    <td><div class="filled_tile" name="letter_tile">A</div></td>
+                    <td><div class="filled_tile" name="letter_tile">S</div></td>
+                    <td><div class="filled_tile" name="letter_tile">D</div></td>
+                    <td><div class="filled_tile" name="letter_tile">F</div></td>
+                    <td><div class="filled_tile" name="letter_tile">G</div></td>
+                    <td><div class="filled_tile" name="letter_tile">H</div></td>
+                    <td><div class="filled_tile" name="letter_tile">J</div></td>
+                    <td><div class="filled_tile" name="letter_tile">K</div></td>
+                    <td><div class="filled_tile" name="letter_tile">L</div></td>
                 </tr>
             </table>
             <table class="letter_tiles">
                 <tr>
-                    <td><div name="letter_tile">Z</div></td>
-                    <td><div name="letter_tile">X</div></td>
-                    <td><div name="letter_tile">C</div></td>
-                    <td><div name="letter_tile">V</div></td>
-                    <td><div name="letter_tile">B</div></td>
-                    <td><div name="letter_tile">N</div></td>
-                    <td><div name="letter_tile">M</div></td>
+                    <td><div class="filled_tile" name="letter_tile">Z</div></td>
+                    <td><div class="filled_tile" name="letter_tile">X</div></td>
+                    <td><div class="filled_tile" name="letter_tile">C</div></td>
+                    <td><div class="filled_tile" name="letter_tile">V</div></td>
+                    <td><div class="filled_tile" name="letter_tile">B</div></td>
+                    <td><div class="filled_tile" name="letter_tile">N</div></td>
+                    <td><div class="filled_tile" name="letter_tile">M</div></td>
                 </tr>
             </table>
         </div>

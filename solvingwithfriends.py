@@ -34,7 +34,7 @@ letter_freq = {}
 def init():
     global letter_freq
     freq = [8.167, 1.492, 2.782, 4.253, 12.702, 2.228, 2.015, 6.094, 6.966, 0.153, 0.772, 4.025, 2.406, 6.749, 7.507, 1.929, 0.095, 5.987, 6.327, 9.056, 2.758, 0.978, 2.360, 0.150, 1.974, 0.074]
-    letter_freq = dict(zip(string.ascii_uppercase, freq))
+    letter_freq = dict(zip(string.ascii_lowercase, freq))
     build_wordlist()
 def cache_word(word):
    return (word, expected_strikes_left(word))
@@ -58,7 +58,10 @@ def get_best_letter_guesses(strategy, words, word_pattern, used_letters):
             best_guesses = [(score, letter)]
         elif score == best_guesses[0][0]:
             best_guesses.append((score, letter))
-    return (sorted([i[1].upper() for i in best_guesses], (lambda i,j: cmp(letter_freq[i], letter_freq[j]))))[::-1]
+    return (sorted([i[1] for i in best_guesses], (lambda i,j: cmp(letter_freq[i], letter_freq[j]))))[::-1]
+
+def get_expected_strikes_left(possible_words):
+    return reduce(lambda acc,val: acc + (1.0/len(possible_words)) * val, map(expected_strikes_left, possible_words), 0)
 
 def get_matches(word_pattern, used_letters):
    "Given a word pattern ('?ots'), return list of all words that match it"
@@ -130,8 +133,7 @@ def expected_strikes_left(word):
       matches = get_matches(str(game), game.get_wrong_letters())
       #print matches
       best_guess = get_best_letter_guesses(default_strategy, matches, str(game), game.get_wrong_letters())[0]
-      #print "For word", game, "guessing", best_guess, "yielding",
-      game.guess_letter(best_guess)
+      print "For word", game, "guessing", best_guess, "yielding", game.guess_letter(best_guess)
       #print "(Used guesses: %s)" % "".join(game.get_wrong_letters())
    num_strikes_allowed = 4 + (8 - len(game.word))
    result=num_strikes_allowed - game.num_strikes()
@@ -214,6 +216,7 @@ if __name__ == "__main__":
             else:
                best_guess = best_guess_minguesses
                print "using minguess strat"
+         print "Your expected strikes left is: %d" % get_expected_strikes_left(matches)
          print "Your best guess is the letter: %s" % best_guess
       elif mode == "create":
          pattern = raw_input("Enter the letters you were given (including duplicates) > ").strip().lower()

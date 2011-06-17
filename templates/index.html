@@ -167,7 +167,9 @@ req.onreadystatechange = function()
 		json = eval(req.responseText)
         document.getElementById("best_guesses").innerHTML = json.best_guesses;
 		document.getElementById("num_remaining_words").innerHTML = json.num_matches;
-		document.getElementById("remaining_words").innerHTML = json.matches;
+        document.getElementById("remaining_words").innerHTML = json.matches;
+        document.getElementById("expected_strikes_left").innerHTML =
+            json.expected_strikes_left;
 	}
 }
 pattern_tiles = document.getElementsByName("pattern_tile");
@@ -184,7 +186,7 @@ used_letters = document.getElementById("used_letters").value;
     </head>
     <body onLoad="createIDs(); initPatternTiles(); initLetterTiles();">
         <div class="main_box">
-            Guess <span id="best_guesses"></span>
+            Guess <b><span id="best_guesses"></span></b>
             <br />
             Used Letters: <input type="text" id="used_letters" onkeyup="update()" />
             <br />
@@ -240,7 +242,9 @@ used_letters = document.getElementById("used_letters").value;
             </table>
         </div>
         <div class="sub_box">
-            <span id="num_remaining_words"></span> Remaining Words:
+            <b><span id="expected_strikes_left"></span></b> Expected Strikes Left
+            <br />
+            <b><span id="num_remaining_words"></span></b> Remaining Words:
             <br />
             <span id="remaining_words"></span>
         </div>

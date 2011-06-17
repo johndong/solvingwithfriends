@@ -20,10 +20,9 @@ class solve:
       num = 0
       print >>s, "<ol>"
       for m in matches:
-        print >>s, "<li> %s" % m.replace(letter,"<b>%s</b>" % letter)
+        print >>s, "<li>%s</li>" % m.replace(letter,"<b>%s</b>" % letter)
         num += 1
-        if num >= 50:
-          print >>s, "<li> ... (too many to list)"
+        if num >= 54:
           break
       print >>s, "</ol>"        
       return s.getvalue()

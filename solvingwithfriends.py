@@ -7,13 +7,12 @@ from math import log
 import string
 import readline
 import code
-import shelve
+import shove
 from multiprocessing import Pool
 
 
-# Open in read only since multiple processes may touch it
-# To update cache, see the if False: code in init(). Remove flags='r' when doing so.
-strike_cache = shelve.open("strikes.cache", flag='r')
+strike_cache = shove.Shove("file://strikes.db")
+
 
 class HistConsole(code.InteractiveConsole):
    def __init__(self, histfile):
@@ -38,19 +37,13 @@ def init():
     letter_freq = dict(zip(string.ascii_lowercase, freq))
     build_wordlist()
 def cache_word(word):
-   return (word, expected_strikes_left(word, cache=False))
+   return (word, expected_strikes_left(word))
 def build_wordlist():
    global wordlist
    wordlist = [i for i in open("enable1.txt").read().splitlines() if len(i) > 3 and len(i) < 9]
    if False: # Update cache
-     p = Pool(processes=4)
-     results=[]
-     for word in wordlist:
-       results.append(p.apply_async(cache_word, [word]))
-     for result in results:
-       (word, strikes)=result.get()
-       strike_cache[word]=strikes
-   
+     p = Pool(processes=40)
+     p.map(cache_word, wordlist)   
    
    
    
@@ -123,14 +116,15 @@ class HangingGame(object):
       newgame = HangingGame(self.word)
       newgame.guesses = set(self.guesses)
 
-def expected_strikes_left(word, cache=True):
+def expected_strikes_left(word):
    '''
    Simulates trying to guess the word.
    
    Returns number of strikes you'd have left by following get_best_letter_guesses()
    '''
-   if cache and word in strike_cache:
-      return strike_cache[word]   
+   if word in strike_cache:
+      return strike_cache[word]
+   print >>sys.stderr, "Warning: Cache not available for", word
    game = HangingGame(word)
    while not game.solved():
       matches = get_matches(str(game), game.get_wrong_letters())
@@ -141,12 +135,10 @@ def expected_strikes_left(word, cache=True):
       #print "(Used guesses: %s)" % "".join(game.get_wrong_letters())
    num_strikes_allowed = 4 + (8 - len(game.word))
    result=num_strikes_allowed - game.num_strikes()
-   if cache:
-     try:
-       strike_cache[word] = result
-     except: pass
-     return result
-   print word, result
+   try:
+     strike_cache[word] = result
+   except e:
+     print >>sys.stderr, e
    return result
 
 

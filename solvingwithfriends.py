@@ -204,20 +204,12 @@ if __name__ == "__main__":
          if len(matches) == 1:
            print "The word is: %s" % list(matches)[0]
          else:
-            best_guess_minguesses = get_best_letter_guesses(score_guess_minguesses, matches, pattern, used_letters)
             best_guess_maxlife = get_best_letter_guesses(score_guess_maxlife, matches, pattern, used_letters)
             print "minguess prob %f" % probability_of_strike(matches, best_guess_minguesses[0])
-            print "maxlife prob %f" % probability_of_strike(matches, best_guess_maxlife[0])
-            print best_guess_minguesses
             print best_guess_maxlife
-            if probability_of_strike(matches, best_guess_maxlife[0]) < 0.25:
-               best_guess = best_guess_maxlife
-               print "using maxlife strat"
-            else:
-               best_guess = best_guess_minguesses
-               print "using minguess strat"
-         print "Your expected strikes left is: %d" % get_expected_strikes_left(matches)
-         print "Your best guess is the letter: %s" % best_guess
+            best_guess = best_guess_maxlife
+            print "Your expected strikes left is: %d" % get_expected_strikes_left(matches)
+            print "Your best guess is the letter: %s" % best_guess
       elif mode == "create":
          pattern = raw_input("Enter the letters you were given (including duplicates) > ").strip().lower()
          if '!' in pattern:

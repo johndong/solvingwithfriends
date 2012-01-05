@@ -10,14 +10,16 @@ try:
 except:
   pass
 import code
-import shove
+#import shove
+import shelve
 try:
   from multiprocessing import Pool
 except:
   pass
 
 
-strike_cache = shove.Shove("file://strikes.db")
+#strike_cache = shove.Shove("file://strikes.db")
+strike_cache = shelve.open("strikes.shelve")
 
 
 class HistConsole(code.InteractiveConsole):
@@ -131,6 +133,7 @@ def expected_strikes_left(word):
    
    Returns number of strikes you'd have left by following get_best_letter_guesses()
    '''
+   global strike_cache
    if word in strike_cache:
       return strike_cache[word]
    print >>sys.stderr, "Warning: Cache not available for", word

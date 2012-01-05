@@ -56,4 +56,4 @@ class index:
 if __name__ == "__main__":
   init()
   app = web.application(urls, globals())
-  app.run()
+  main = app.cgirun()

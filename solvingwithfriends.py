@@ -5,10 +5,16 @@ import sys
 import re
 from math import log
 import string
-import readline
+try:
+  import readline
+except:
+  pass
 import code
 import shove
-from multiprocessing import Pool
+try:
+  from multiprocessing import Pool
+except:
+  pass
 
 
 strike_cache = shove.Shove("file://strikes.db")

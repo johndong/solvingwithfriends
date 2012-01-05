@@ -205,7 +205,6 @@ if __name__ == "__main__":
            print "The word is: %s" % list(matches)[0]
          else:
             best_guess_maxlife = get_best_letter_guesses(score_guess_maxlife, matches, pattern, used_letters)
-            print "minguess prob %f" % probability_of_strike(matches, best_guess_minguesses[0])
             print best_guess_maxlife
             best_guess = best_guess_maxlife
             print "Your expected strikes left is: %d" % get_expected_strikes_left(matches)

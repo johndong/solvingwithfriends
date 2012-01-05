@@ -23,7 +23,7 @@ class solve:
       for m in matches:
         print >>s, "<li>%s</li>" % m.replace(letter,"<b>%s</b>" % letter)
         num += 1
-        if num >= 54:
+        if num >= 36:
           break
       print >>s, "</ol>"        
       return s.getvalue()

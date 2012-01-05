@@ -10,17 +10,15 @@ try:
 except:
   pass
 import code
-#import shove
-import shelve
+import cPickle
 try:
   from multiprocessing import Pool
 except:
   pass
 
-
-#strike_cache = shove.Shove("file://strikes.db")
-strike_cache = shelve.open("strikes.shelve")
-
+f = open("strikes.cPickle", "r")
+strike_cache = cPickle.load(f)
+f.close()
 
 class HistConsole(code.InteractiveConsole):
    def __init__(self, histfile):
